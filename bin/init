@@ -1,0 +1,29 @@
+#!/bin/sh
+
+SELF=$(cd $(dirname $0); pwd)
+
+THEME_VENDOR='panr'
+THEME_NAME='hugo-theme-terminal'
+
+function _init() {
+    echo ">> create hugo site"
+    docker run -v ${SELF}/../:/site --rm -it nutsllc/toybox-hugo hugo new site site
+
+    echo ">> download ${THEME_NAME} theme"
+    cd site
+    git init
+    cd themes
+    git submodule add https://github.com/${THEME_VENDOR}/${THEME_NAME}
+
+    echo ">> setup ${THEME_NAME} theme"
+    cp -r ${THEME_NAME}/exampleSite/* ../
+    sed -i -e 's/^\(themesdir\)/#\1/' ../config.toml
+    cp -r ${SELF}/../lib ${SELF}/../site/bin
+    mv ${SELF}/../site/bin/docker-compose.yml ${SELF}/../site
+}
+
+_init && {
+    echo "complete!"
+}
+
+exit 0;
